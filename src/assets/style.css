@@ -1,0 +1,30 @@
+/*Fonts*/
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron&family=Rajdhani:wght@400;700&display=swap');
+
+/*Global*/
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+    color: white;
+}
+
+.landing-background {
+    background: linear-gradient(to bottom, #663FB5 0%, #000000 100%);
+    min-height: 100vh;
+    
+}
+
+body, button, p, card, div, .text-h1, .text-h2, .text-h3, .text-h4, .text-h5, .text-h6 {
+    font-family: 'Rajdhani', sans-serif;
+    color: white;
+}
+
+.dashboard-background {
+    background: linear-gradient(to bottom, rgba(102, 63, 181, 0.68) 0%, rgba(0, 0, 0, 0.69) 100%), #000000;
+    min-height: 100vh;
+}
+
+.login-background {
+    background: linear-gradient(40deg, rgba(102, 63, 181, 0.2) 0%, rgba(0, 0, 0, 0.2) 80%), #000000;
+}
