@@ -1,5 +1,5 @@
-``markdown
-# 💼 Ewallet – Application de portefeuille électronique
+
+# Ewallet – Application de portefeuille électronique
 
 Cette application permet de gérer des transactions financières entre utilisateurs, commerçants et agents via un système sécurisé basé sur Spring Boot.
 
