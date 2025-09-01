@@ -24,7 +24,6 @@ public class Utilisateur {
     @Column(name = "mot_de_passe", nullable = false)
     private String motDePasse;
 
-    @Column(nullable = false)
     private String role; // client, agent, commerçant
 
     private String image;

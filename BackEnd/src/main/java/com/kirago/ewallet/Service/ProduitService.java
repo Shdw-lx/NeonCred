@@ -1,9 +1,7 @@
 package com.kirago.ewallet.Service;
 
 import com.kirago.ewallet.Model.Produit;
-import com.kirago.ewallet.Model.Compte;
 import com.kirago.ewallet.Repository.ProduitRepository;
-import com.kirago.ewallet.Repository.CompteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +17,9 @@ import java.util.UUID;
 public class ProduitService {
 
     private final ProduitRepository produitRepository;
-    private final CompteRepository compteRepository;
 
-    public ProduitService(ProduitRepository produitRepository, CompteRepository compteRepository) {
+    public ProduitService(ProduitRepository produitRepository) {
         this.produitRepository = produitRepository;
-        this.compteRepository = compteRepository;
     }
 
     // Récupérer tous les produits
@@ -39,7 +35,9 @@ public class ProduitService {
     // Créer ou mettre à jour un produit
     @Transactional
     public Produit save(Produit produit) {
-        produit.setId("PDT#" + UUID.randomUUID().toString().substring(0, 7));
+        if (produit.getId() == null || produit.getId().isEmpty()) {
+            produit.setId("PDT#" + UUID.randomUUID().toString().substring(0, 7));
+        }
         return produitRepository.save(produit);
     }
 
@@ -49,23 +47,4 @@ public class ProduitService {
         produitRepository.deleteById(id);
     }
 
-    /**
-     * Achat d'un produit par un client (débit du compte)
-     */
-    @Transactional
-    public String acheterProduit(String produitId, String compteId) {
-        Produit produit = produitRepository.findById(produitId)
-                .orElseThrow(() -> new RuntimeException("Produit introuvable"));
-        Compte compte = compteRepository.findById(compteId)
-                .orElseThrow(() -> new RuntimeException("Compte introuvable"));
-
-        if (compte.getSolde() < produit.getPrix()) {
-            return "Solde insuffisant pour acheter ce produit";
-        }
-
-        compte.setSolde(compte.getSolde() - produit.getPrix());
-        compteRepository.save(compte);
-
-        return "Achat du produit '" + produit.getNom() + "' réussi";
-    }
 }

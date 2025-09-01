@@ -18,13 +18,13 @@ public class ImageController {
 
     /**
      * Upload d'une image utilisateur
-     * Endpoint : POST http://localhost:8080/api/images/upload/utilisateur
+     * Endpoint : POST http://localhost:8080/image/utilisateur
      */
     @PostMapping("/utilisateur")
     public ResponseEntity<String> uploadUserImage(@RequestParam("file") MultipartFile file) {
         try {
             // Sauvegarde dans "imageUtilisateur"
-            String imageUrl = imageService.saveImage(file, "imageUtilisateur");
+            String imageUrl = imageService.saveImage(file, "ImageUtilisateur");
             return ResponseEntity.ok("http://localhost:8080" + imageUrl);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Erreur lors de l’upload : " + e.getMessage());
@@ -33,13 +33,13 @@ public class ImageController {
 
     /**
      * Upload d'une image produit
-     * Endpoint : POST http://localhost:8080/api/images/upload/produit
+     * Endpoint : POST http://localhost:8080/image/produit
      */
     @PostMapping("/produit")
     public ResponseEntity<String> uploadProductImage(@RequestParam("file") MultipartFile file) {
         try {
             // Sauvegarde dans "imageProduit"
-            String imageUrl = imageService.saveImage(file, "imageProduit");
+            String imageUrl = imageService.saveImage(file, "ImageProduit");
             return ResponseEntity.ok("http://localhost:8080" + imageUrl);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Erreur lors de l’upload : " + e.getMessage());

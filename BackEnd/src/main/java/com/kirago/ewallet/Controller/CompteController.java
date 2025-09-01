@@ -33,7 +33,7 @@ public class CompteController {
     }
 
     // POST - Créer un compte
-    @PostMapping
+    @PostMapping("/add")
     public Compte create(@RequestBody Compte compte) {
         return compteService.save(compte);
     }
@@ -51,15 +51,4 @@ public class CompteController {
         compteService.delete(id);
     }
 
-    // POST - Recharger un compte
-    @PostMapping("/recharger")
-    public Compte recharger(@PathVariable String id, @RequestParam Long montant) {
-        return compteService.recharger(id, montant);
-    }
-
-    // POST - Débiter un compte
-    @PostMapping("/debiter")
-    public Compte debiter(@PathVariable String id, @RequestParam Long montant) {
-        return compteService.debiter(id, montant);
-    }
 }

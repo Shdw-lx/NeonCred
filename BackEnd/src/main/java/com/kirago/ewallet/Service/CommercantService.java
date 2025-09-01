@@ -35,7 +35,9 @@ public class CommercantService {
     // Créer ou mettre à jour un commerçant
     @Transactional
     public Commercant save(Commercant commercant) {
-        commercant.setId("CMC#" + UUID.randomUUID().toString().substring(0, 7));
+        if (commercant.getId() == null || commercant.getId().isEmpty()) {
+            commercant.setId("CMC#" + UUID.randomUUID().toString().substring(0, 7));   
+        }
         return commercantRepository.save(commercant);
     }
 

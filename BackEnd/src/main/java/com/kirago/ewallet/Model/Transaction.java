@@ -33,7 +33,9 @@ public class Transaction {
     private Compte compteCible;
 
     @Lob
-    private String qrCodeBase64;
+    private String qrCode;
+
+    private Produit produit;
 
     public Transaction(Long montant, Compte compteSource, Compte compteCible) {
         this.montant = montant;

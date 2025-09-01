@@ -34,7 +34,7 @@ public class UtilisateurController {
     }
 
     // POST - Créer un utilisateur
-    @PostMapping
+    @PostMapping("/add")
     public Utilisateur create(@RequestBody Utilisateur utilisateur) {
         return utilisateurService.save(utilisateur);
     }

@@ -33,7 +33,7 @@ public class BanqueController {
     }
 
     // POST - Créer une banque
-    @PostMapping
+    @PostMapping ("/add")
     public Banque create(@RequestBody Banque banque) {
         return banqueService.save(banque);
     }

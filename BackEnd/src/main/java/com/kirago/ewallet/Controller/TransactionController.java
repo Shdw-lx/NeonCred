@@ -1,9 +1,14 @@
 package com.kirago.ewallet.Controller;
 
+import com.google.zxing.WriterException;
+import com.kirago.ewallet.Dto.TransactionRequest;
 import com.kirago.ewallet.Model.Transaction;
 import com.kirago.ewallet.Service.TransactionService;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,9 +43,29 @@ public class TransactionController {
         transactionService.delete(id);
     }
 
-    // POST - Transfert entre comptes
-    @PostMapping("/transferer")
-    public Transaction transferer(@RequestParam String compteSource, @RequestParam String compteCible, @RequestParam Long montant) {
-        return transactionService.transferer(compteSource, compteCible, montant);
+    // ========== Transaction via formulaire ==========
+    @PostMapping("/Payform")
+    public ResponseEntity<Transaction> effectuerTransactionViaForm(@RequestBody TransactionRequest request) {
+        Transaction transaction = transactionService.effectuerTransactionViaForm(request);
+        return ResponseEntity.ok(transaction);
     }
+
+    // ========== Transaction via QR Code ==========
+    @PostMapping("/PayQr")
+    public ResponseEntity<Transaction> effectuerTransactionViaQr(@RequestBody TransactionRequest request) {
+        Transaction transaction = transactionService.effectuerTransactionViaQr(request);
+        return ResponseEntity.ok(transaction);
+    }
+
+    // ========== Générer un QR Code pour un produit ==========
+    @GetMapping("/GenerateQR")
+    public ResponseEntity<String> genererQrCode(
+            @RequestParam String commercantId,
+            @RequestParam String produitId,
+            @RequestParam Long montant
+    ) throws WriterException, IOException {
+        String qrCodeBase64 = transactionService.genererQrCode(commercantId, produitId, montant);
+        return ResponseEntity.ok("data:image/png;base64," + qrCodeBase64);
+    }
+
 }

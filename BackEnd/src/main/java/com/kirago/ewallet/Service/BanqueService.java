@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Service pour la gestion des Banques.
@@ -34,6 +35,9 @@ public class BanqueService {
     // Créer ou mettre à jour une banque
     @Transactional
     public Banque save(Banque banque) {
+        if (banque.getId() == null || banque.getId().isEmpty()) {
+            banque.setId("BNQ#" + UUID.randomUUID().toString().substring(0, 7));
+        }
         return banqueRepository.save(banque);
     }
 

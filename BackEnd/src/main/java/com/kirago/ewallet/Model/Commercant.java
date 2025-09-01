@@ -1,5 +1,7 @@
 package com.kirago.ewallet.Model;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,10 +21,10 @@ public class Commercant {
     private Utilisateur utilisateur;
 
     @OneToMany(mappedBy = "commercant", cascade = CascadeType.ALL, orphanRemoval = true)
-    private java.util.List<Produit> produits;
+    private List<Produit> produit;
 
-    @Column(name = "nom_commerce")
-    private String nomCommerce;
+    @Column(name = "nom_commercant")
+    private String nomCommercant;
 
     private String categorie;
 }

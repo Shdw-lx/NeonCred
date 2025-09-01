@@ -2,9 +2,15 @@ package com.kirago.ewallet.Service;
 
 import com.kirago.ewallet.Model.Transaction;
 import com.kirago.ewallet.Model.Compte;
+import com.kirago.ewallet.Dto.TransactionRequest;
+import com.kirago.ewallet.Model.Produit;
 import com.kirago.ewallet.Repository.TransactionRepository;
 import com.kirago.ewallet.Repository.CompteRepository;
+import com.kirago.ewallet.Repository.ProduitRepository;
+
 import jakarta.transaction.Transactional;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -28,10 +34,16 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final CompteRepository compteRepository;
+    private final CompteService compteService;
+    private final ProduitRepository produitRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public TransactionService(TransactionRepository transactionRepository, CompteRepository compteRepository) {
+    public TransactionService(TransactionRepository transactionRepository, CompteRepository compteRepository, CompteService compteService) {
         this.transactionRepository = transactionRepository;
         this.compteRepository = compteRepository;
+        this.compteService = compteService;
+        this.produitRepository = null;
+        this.passwordEncoder = null;
     }
 
     // Lister toutes les transactions
@@ -54,50 +66,103 @@ public class TransactionService {
      * Créer une transaction simple entre deux comptes
      */
     @Transactional
-    public Transaction transferer(String compteSource, String compteCible, Long montant) {
-        if (montant <= 0) {
-            throw new IllegalArgumentException("Le montant doit être positif");
+    // ========== Transaction par formulaire ==========
+    public Transaction effectuerTransactionViaForm(TransactionRequest request) {
+        // Récupérer source et destination
+        Compte source = compteRepository.findById(request.getSourceId())
+                .orElseThrow(() -> new RuntimeException("Emetteur introuvable"));
+        Compte destination = compteRepository.findById(request.getDestinationId())
+                .orElseThrow(() -> new RuntimeException("Recepteur introuvable"));
+
+        // Vérifier mot de passe
+        if (!passwordEncoder.matches(request.getPassword(), source.getMotDePasse())) {
+            throw new RuntimeException("Mot de passe incorrect");
         }
 
-        Compte source = compteRepository.findById(compteSource)
-                .orElseThrow(() -> new RuntimeException("Compte source introuvable"));
-        Compte destination = compteRepository.findById(compteCible)
-                .orElseThrow(() -> new RuntimeException("Compte destination introuvable"));
+        // Vérifier solde
+        if (source.getSolde() < request.getMontant()) {
+            throw new RuntimeException("Solde insuffisant");
+        }
 
+        // Effectuer la transaction
+        compteService.debiter(source.getId(), request.getMontant());
+        compteService.crediter(destination.getId(), request.getMontant());
+
+        compteRepository.save(source);
+        compteRepository.save(destination);
+
+        // Sauvegarder transaction
+        Transaction transaction = new Transaction();
+        transaction.setId("TRC#" + UUID.randomUUID().toString().substring(0, 7));
+        transaction.setMontant(request.getMontant());
+        transaction.setDateTransaction(LocalDateTime.now());
+        transaction.setTypeTransaction(request.getType());
+        transaction.setCompteSource(source);
+        transaction.setCompteCible(destination);
+
+        return transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    // ========== Transaction par QR Code ==========
+    public Transaction effectuerTransactionViaQr(TransactionRequest request) {
+        // Décoder QR code : format "PRODUIT:commercantId:produitId:montant"
+        String[] parts = request.getQrCodeData().split(":");
+        String commercantId = parts[1];
+        String produitId = parts[2];
+        Long montant = Long.parseLong(parts[3]);
+
+        // Récupérer source, commerçant, produit
+        Compte source = compteRepository.findById(request.getSourceId())
+                .orElseThrow(() -> new RuntimeException("Client introuvable"));
+        Compte destination = compteRepository.findById(commercantId)
+                .orElseThrow(() -> new RuntimeException("Commerçant introuvable"));
+        Produit produit = produitRepository.findById(produitId)
+                .orElseThrow(() -> new RuntimeException("Produit introuvable"));
+
+        // Vérifier mot de passe
+        if (!passwordEncoder.matches(request.getPassword(), source.getMotDePasse())) {
+            throw new RuntimeException("Mot de passe incorrect");
+        }
+
+        // Vérifier solde
         if (source.getSolde() < montant) {
             throw new RuntimeException("Solde insuffisant");
         }
 
-        // Débit et crédit
+        // Effectuer la transaction
         source.setSolde(source.getSolde() - montant);
         destination.setSolde(destination.getSolde() + montant);
 
         compteRepository.save(source);
         compteRepository.save(destination);
 
-        // Enregistrer la transaction
+        // Sauvegarder transaction
         Transaction transaction = new Transaction();
+        transaction.setId("UTL#" + UUID.randomUUID().toString().substring(0, 7));
         transaction.setMontant(montant);
         transaction.setDateTransaction(LocalDateTime.now());
         transaction.setCompteSource(source);
         transaction.setCompteCible(destination);
-        transaction.setId("UTL#" + UUID.randomUUID().toString().substring(0, 7));
+        transaction.setProduit(produit);
+
         return transactionRepository.save(transaction);
     }
 
-    // Méthode utilitaire : génère un QR Code et le renvoie en Base64
-    private String generateQRCodeBase64(String text, int width, int height) {
-        try {
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
+    // ========== Générer un QR Code pour un produit ==========
+    public String genererQrCode(String commercantId, String produitId, Long montant)
+            throws WriterException, IOException {
 
-            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+        String qrContent = "PRODUIT:" + commercantId + ":" + produitId + ":" + montant;
 
-            byte[] pngData = pngOutputStream.toByteArray();
-            return Base64.getEncoder().encodeToString(pngData);
-        } catch (WriterException | IOException e) {
-            throw new RuntimeException("Erreur lors de la génération du QR Code", e);
-        }
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        BitMatrix bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, 250, 250);
+
+        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+
+        byte[] pngData = pngOutputStream.toByteArray();
+        return Base64.getEncoder().encodeToString(pngData); // retourne l'image en base64
     }
+
 }

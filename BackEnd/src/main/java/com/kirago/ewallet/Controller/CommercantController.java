@@ -33,7 +33,7 @@ public class CommercantController {
     }
 
     // POST - Créer un commerçant
-    @PostMapping
+    @PostMapping("/add")
     public Commercant create(@RequestBody Commercant commercant) {
         return commercantService.save(commercant);
     }

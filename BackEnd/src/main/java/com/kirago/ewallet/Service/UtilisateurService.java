@@ -34,7 +34,9 @@ public class UtilisateurService {
     // Créer ou mettre à jour un utilisateur
     @Transactional
     public Utilisateur save(Utilisateur utilisateur) {
-        utilisateur.setId("UTL#" + UUID.randomUUID().toString().substring(0, 7));
+        if(utilisateur.getId() == null || utilisateur.getId().isEmpty()){
+            utilisateur.setId("UTL#" + UUID.randomUUID().toString().substring(0, 7));
+        }
         return utilisateurRepository.save(utilisateur);
     }
 

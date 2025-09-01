@@ -34,7 +34,7 @@ public class ClientController {
     }
 
     // POST - Créer un client
-    @PostMapping
+    @PostMapping("/add")
     public Client create(@RequestBody Client client) {
         return clientService.save(client);
     }

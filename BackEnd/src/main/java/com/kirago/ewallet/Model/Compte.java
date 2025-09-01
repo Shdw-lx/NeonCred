@@ -23,13 +23,16 @@ public class Compte {
     private String typeCompte;
 
     private String statut;
+    private String motDePasse;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_utilisateur", nullable = false)
     private Utilisateur utilisateur;
 
-    public Compte(Long solde) {
-        this.solde = solde;
+    public Compte(Compte compte){
+        this.id = compte.getId();
+        this.solde = compte.getSolde();
+        this.motDePasse = compte.getUtilisateur().getMotDePasse();
     }
 
     @Override

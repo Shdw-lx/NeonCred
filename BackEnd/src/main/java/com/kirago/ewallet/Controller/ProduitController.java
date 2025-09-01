@@ -33,7 +33,7 @@ public class ProduitController {
     }
 
     // POST - Créer un produit
-    @PostMapping
+    @PostMapping("/add")
     public Produit create(@RequestBody Produit produit) {
         return produitService.save(produit);
     }
@@ -51,9 +51,4 @@ public class ProduitController {
         produitService.delete(id);
     }
 
-    // POST - Achat produit
-    @PostMapping("/{produitId}/acheter/{compteId}")
-    public String acheter(@PathVariable String produitId, @PathVariable String compteId) {
-        return produitService.acheterProduit(produitId, compteId);
-    }
 }

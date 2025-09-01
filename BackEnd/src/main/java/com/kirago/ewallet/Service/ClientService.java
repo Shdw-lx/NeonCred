@@ -35,7 +35,9 @@ public class ClientService {
     // Créer ou mettre à jour un client
     @Transactional
     public Client save(Client client) {
-        client.setId("CLT#" + UUID.randomUUID().toString().substring(0, 7));
+       if (client.getId() == null || client.getId().isEmpty()) {
+           client.setId("CLT#" + UUID.randomUUID().toString().substring(0, 7));
+       }
         return clientRepository.save(client);
     }
 

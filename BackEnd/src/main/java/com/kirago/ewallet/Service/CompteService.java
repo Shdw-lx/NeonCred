@@ -35,7 +35,9 @@ public class CompteService {
     // Créer ou mettre à jour un compte
     @Transactional
     public Compte save(Compte compte) {
-        compte.setId("CPT#" + UUID.randomUUID().toString().substring(0, 7));
+        if (compte.getId() == null || compte.getId().isEmpty()) {
+            compte.setId("CPT#" + UUID.randomUUID().toString().substring(0, 7));
+        }
         return compteRepository.save(compte);
     }
 
@@ -49,11 +51,14 @@ public class CompteService {
      * Recharger un compte avec un montant positif
      */
     @Transactional
-    public Compte recharger(String compteId, Long montant) {
+    public Compte crediter(String compteId, Long montant) {
         Compte compte = compteRepository.findById(compteId)
                 .orElseThrow(() -> new RuntimeException("Compte introuvable"));
         if (montant <= 0) {
             throw new IllegalArgumentException("Montant invalide");
+        }
+        if (compte.getSolde() < montant) {
+            throw new RuntimeException("Solde insuffisant");
         }
         compte.setSolde(compte.getSolde() + montant);
         return compteRepository.save(compte);

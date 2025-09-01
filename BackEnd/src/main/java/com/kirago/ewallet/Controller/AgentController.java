@@ -33,7 +33,7 @@ public class AgentController {
     }
 
     // POST - Créer un agent
-    @PostMapping
+    @PostMapping("/add")
     public Agent create(@RequestBody Agent agent) {
         return agentService.save(agent);
     }
