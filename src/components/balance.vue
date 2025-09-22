@@ -20,7 +20,7 @@ const card = {
           elevation="8"
           style="background: rgba(217, 217, 217, 0.06)"
           link
-          to="/wallet"
+          to="/balanceandoperations"
         >
           <h4>{{ card.title }}</h4>
           <div class="d-flex align-center">

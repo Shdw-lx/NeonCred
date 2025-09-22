@@ -59,7 +59,7 @@
 
             <v-row class="mt-5">
                 <v-col>
-                    <router-link to="">Forgot Password ?</router-link>
+                    <router-link to="/password">Forgot Password ?</router-link>
                 </v-col>
             </v-row>
           </v-form>
